@@ -1,26 +1,28 @@
 package model
 
 import (
+	"IkezawaYuki/a-root-backend/domain/entity"
 	"gorm.io/gorm"
 	"time"
 )
 
 type Customer struct {
 	gorm.Model
-	Name                 string                `gorm:"column:name"`
-	Email                string                `gorm:"column:email"`
-	Password             string                `gorm:"column:password"`
-	WordpressUrl         string                `gorm:"column:wordpress_url"`
-	FacebookToken        *string               `gorm:"column:facebook_token"`
-	StartDate            *time.Time            `gorm:"column:start_date"`
-	InstagramTokenStatus *InstagramTokenStatus `gorm:"column:instagram_token_status"`
-	InstagramAccountID   *string               `gorm:"column:instagram_account_id"`
-	InstagramAccountName *string               `gorm:"column:instagram_account_name"`
-	SubscriptionID       *string               `gorm:"column:stripe_subscription_id"`
-	StripeCustomerID     *string               `gorm:"column:stripe_customer_id"`
-	PaymentType          *PaymentType          `gorm:"column:payment_type"`
-	PaymentStatus        *PaymentStatus        `gorm:"column:payment_status"`
-	DeleteHashFlag       *DeleteHashFlag       `gorm:"column:delete_hash_flag"`
+	Name                 string                  `gorm:"column:name"`
+	Email                string                  `gorm:"column:email"`
+	Password             string                  `gorm:"column:password"`
+	WordpressUrl         string                  `gorm:"column:wordpress_url"`
+	FacebookToken        *string                 `gorm:"column:facebook_token"`
+	StartDate            *time.Time              `gorm:"column:start_date"`
+	InstagramTokenStatus *InstagramTokenStatus   `gorm:"column:instagram_token_status"`
+	InstagramAccountID   *string                 `gorm:"column:instagram_account_id"`
+	InstagramAccountName *string                 `gorm:"column:instagram_account_name"`
+	SubscriptionID       *string                 `gorm:"column:stripe_subscription_id"`
+	StripeCustomerID     *string                 `gorm:"column:stripe_customer_id"`
+	PaymentType          *entity.PaymentType     `gorm:"column:payment_type"`
+	PaymentStatus        *PaymentStatus          `gorm:"column:payment_status"`
+	DeleteHashFlag       *DeleteHashFlag         `gorm:"column:delete_hash_flag"`
+	DashboardStatus      *entity.DashboardStatus `gorm:"column:dashboard_status"`
 }
 
 func (c *Customer) IsLinked() bool {
@@ -33,28 +35,6 @@ const (
 	MetaTokenStatusInactive MetaTokenStatus = iota
 	MetaTokenStatusActive
 )
-
-type PaymentType int
-
-const (
-	PaymentTypeUnknown PaymentType = -1
-	PaymentTypeNone    PaymentType = 0
-	PaymentTypeStripe  PaymentType = 1
-)
-
-func ConvertToPaymentType(s *string) PaymentType {
-	if s == nil {
-		return PaymentTypeUnknown
-	}
-	switch *s {
-	case "none":
-		return PaymentTypeNone
-	case "stripe":
-		return PaymentTypeStripe
-	default:
-		return PaymentTypeUnknown
-	}
-}
 
 type DeleteHashFlag bool
 

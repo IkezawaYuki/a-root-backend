@@ -2,7 +2,6 @@ package repository
 
 import (
 	"IkezawaYuki/a-root-backend/config"
-	"IkezawaYuki/a-root-backend/domain/entity"
 	"IkezawaYuki/a-root-backend/infrastructure"
 	"IkezawaYuki/a-root-backend/interface/dto/external"
 	"context"
@@ -11,7 +10,7 @@ import (
 )
 
 type RodutRepository interface {
-	CreatePost(ctx context.Context, wordpressUrl string, post entity.WordpressPost) (*external.CreatePostResponse, error)
+	CreatePost(ctx context.Context, wordpressUrl string, post external.WordpressPost) (*external.CreatePostResponse, error)
 	UploadMedia(ctx context.Context, wordpressUrl string, filePath string) (*external.UploadMediaResponse, error)
 	UploadMedias(ctx context.Context, wordpressUrl string, filePath []string) ([]*external.UploadMediaResponse, error)
 }
@@ -32,7 +31,7 @@ type rodutRepository struct {
 
 const createPostEndpoint = "create-post"
 
-func (r *rodutRepository) CreatePost(ctx context.Context, wordpressUrl string, post entity.WordpressPost) (*external.CreatePostResponse, error) {
+func (r *rodutRepository) CreatePost(ctx context.Context, wordpressUrl string, post external.WordpressPost) (*external.CreatePostResponse, error) {
 	url := fmt.Sprintf("https://%s/rodut/v1/%s", wordpressUrl, createPostEndpoint)
 	responseBody, err := r.httpClient.PostRequest(ctx, url, &external.CreatePostRequest{
 		ApiKey:        r.ApiKey,

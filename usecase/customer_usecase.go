@@ -81,10 +81,10 @@ func (c *customerUsecase) FindAll(ctx context.Context, query req.CustomerQuery) 
 		paymentStatus = &p
 	}
 
-	var paymentType *model.PaymentType
+	var paymentType *entity.PaymentType
 	if query.PaymentType != nil {
-		p := model.ConvertToPaymentType(query.PaymentType)
-		if p == model.PaymentTypeUnknown {
+		p := entity.ConvertToPaymentType(query.PaymentType)
+		if p == entity.PaymentTypeUnknown {
 			return nil, arootErr.ErrInvalidInstagramTokenStatus
 		}
 		paymentType = &p
@@ -178,7 +178,7 @@ func (c *customerUsecase) FetchAndPost(ctx context.Context, customerID int) (*re
 			return nil, err
 		}
 
-		createPost := entity.NewWordpressPost(instagramMedia, wordpressMedia)
+		createPost := external.NewWordpressPost(instagramMedia, wordpressMedia)
 		wordpressResp, err := c.rodutRepo.CreatePost(ctx, customer.WordpressUrl, createPost)
 		if err != nil {
 			return nil, err
