@@ -1,7 +1,7 @@
 .PHONY: swag
 
 swag:
-	swag init -g cmd/popple/main.go
+	swag init -d ./cmd/server -o ./docs
 
 .PHONY: dev
 dev:

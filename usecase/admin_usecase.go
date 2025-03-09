@@ -137,11 +137,10 @@ func (a *adminUsecase) Login(ctx context.Context, user req.User) (*res.Auth, err
 
 func (a *adminUsecase) GetCustomers(ctx context.Context, query req.CustomerQuery) (*res.Customers, error) {
 	f := &filter.CustomerFilter{
-		Email:           query.Email,
-		IsFacebookToken: query.IsFacebookToken,
-		PartialName:     query.PartialName,
-		Limit:           query.Limit,
-		Offset:          query.Offset,
+		Email:       query.Email,
+		PartialName: query.PartialName,
+		Limit:       query.Limit,
+		Offset:      query.Offset,
 	}
 	customers, err := a.customerRepo.Get(ctx, f)
 	if err != nil {

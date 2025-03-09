@@ -141,26 +141,3 @@ func (h CustomerHandler) FetchAndPosts(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, resp)
 }
-
-// GetSetting
-// @Summary 設定を取得する
-// @Description
-// @Tags customer
-// @Accept application/json
-// @Produce application/json
-// @Success 200 {object} res.Setting
-// @Router /customer/setting [GET]
-func (h CustomerHandler) GetSetting(c *gin.Context) {
-	slog.Info("GetSetting is invoked")
-	customerID, ok := c.Get("customer_id")
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid customer_id"})
-		return
-	}
-	resp, err := h.customerUsecase.GetSetting(c.Request.Context(), customerID.(int))
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-	c.JSON(http.StatusOK, resp)
-}

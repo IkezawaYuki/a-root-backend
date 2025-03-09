@@ -27,5 +27,5 @@ func NewOpenaiService(
 }
 
 func (o *openaiService) Maika(ctx context.Context, dto external.OpenaiDto) (*external.OpenaiResult, error) {
-
+	return nil, nil
 }
