@@ -272,3 +272,27 @@ func (h AdminHandler) DeleteCustomer(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, resp)
 }
+
+// Login
+// @Summary ログインする
+// @Description
+// @Tags admin
+// @Accept application/json
+// @Produce application/json
+// @param default body req.User true "ログイン情報"
+// @Success 200 {object} res.Auth
+// @Router /customer/login [POST]
+func (h AdminHandler) Login(c *gin.Context) {
+	slog.Info("Login is invoked")
+	var user req.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.adminUsecase.Login(c.Request.Context(), user)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}

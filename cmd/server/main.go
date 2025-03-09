@@ -51,11 +51,13 @@ func main() {
 
 	v1 := r.Group("/v1")
 	{
+		v1.POST("/customer/login", customerHandler.Login)
+		v1.POST("/admin/login", adminHandler.Login)
+
 		customer := v1.Group("/customer", middleware.Customer)
 		{
 			customer.GET("/me", customerHandler.GetMe)
 			customer.GET("/posts", customerHandler.GetPosts)
-			customer.POST("/login", customerHandler.Login)
 			customer.GET("/instagram", customerHandler.FetchInstagramPosts)
 			customer.POST("/sync", customerHandler.Sync)
 		}
