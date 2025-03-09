@@ -61,8 +61,13 @@ func NewAdminUsecase(
 func (a *adminUsecase) CreateCustomer(ctx context.Context, body req.CreateCustomerBody) (resp *res.Customer, err error) {
 	tx := a.baseRepository.Begin()
 	defer func() {
-		if err != nil {
+		if r := recover(); r != nil {
 			tx.Rollback()
+			panic(r)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			_ = tx.Commit()
 		}
 	}()
 
@@ -84,11 +89,6 @@ func (a *adminUsecase) CreateCustomer(ctx context.Context, body req.CreateCustom
 		WordpressUrl: body.WordpressURL,
 	}
 	err = a.customerRepo.SaveTx(ctx, customer, tx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}

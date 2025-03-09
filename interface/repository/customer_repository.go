@@ -11,6 +11,7 @@ type CustomerRepository interface {
 	Get(ctx context.Context, f *filter.CustomerFilter) ([]*model.Customer, error)
 	GetTx(ctx context.Context, f *filter.CustomerFilter, tx infrastructure.Transaction) ([]*model.Customer, error)
 	First(ctx context.Context, f *filter.CustomerFilter) (*model.Customer, error)
+	FirstTx(ctx context.Context, f *filter.CustomerFilter, tx infrastructure.Transaction) (*model.Customer, error)
 	Save(ctx context.Context, customer *model.Customer) error
 	SaveTx(ctx context.Context, customer *model.Customer, tx infrastructure.Transaction) error
 	Delete(ctx context.Context, f *filter.CustomerFilter) error
@@ -49,6 +50,15 @@ func (c *customerRepository) GetTx(ctx context.Context, f *filter.CustomerFilter
 func (c *customerRepository) First(ctx context.Context, f *filter.CustomerFilter) (*model.Customer, error) {
 	var customer model.Customer
 	err := c.dbDriver.First(ctx, &customer, f)
+	if err != nil {
+		return nil, err
+	}
+	return &customer, nil
+}
+
+func (c *customerRepository) FirstTx(ctx context.Context, f *filter.CustomerFilter, tx infrastructure.Transaction) (*model.Customer, error) {
+	var customer model.Customer
+	err := c.dbDriver.FirstTx(ctx, &customer, f, tx)
 	if err != nil {
 		return nil, err
 	}

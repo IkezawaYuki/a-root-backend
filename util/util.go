@@ -1,6 +1,9 @@
 package util
 
-import "reflect"
+import (
+	"reflect"
+	"runtime"
+)
 
 func Pointer[T any](value T) *T {
 	return &value
@@ -15,4 +18,10 @@ func IsNil(i interface{}) bool {
 		return v.IsNil()
 	}
 	return false
+}
+
+func GetStackTrace() string {
+	buf := make([]byte, 2048)
+	n := runtime.Stack(buf, false)
+	return string(buf[:n])
 }

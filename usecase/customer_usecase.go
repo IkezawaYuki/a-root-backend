@@ -10,7 +10,6 @@ import (
 	"IkezawaYuki/a-root-backend/interface/filter"
 	"IkezawaYuki/a-root-backend/interface/repository"
 	"IkezawaYuki/a-root-backend/service"
-	"IkezawaYuki/a-root-backend/util"
 	"context"
 	"fmt"
 	"slices"
@@ -23,6 +22,7 @@ type CustomerUsecase interface {
 	GetPosts(ctx context.Context, customerID int, req req.PostQuery) (*res.Posts, error)
 	FetchInstagramPosts(ctx context.Context, customerID int) (*external.InstagramPosts, error)
 	GenerateLongToken(ctx context.Context, customerID int, body req.AuthTokenBody) (*res.Message, error)
+	RefreshToken(ctx context.Context, customerID int) (*res.Message, error)
 }
 
 type customerUsecase struct {
@@ -35,6 +35,8 @@ type customerUsecase struct {
 	postService     service.PostService
 	graphApi        service.GraphAPI
 	fileTransfer    service.FileService
+	slackService    service.SlackService
+	openaiService   service.OpenaiService
 }
 
 func NewCustomerUsecase(
@@ -47,6 +49,8 @@ func NewCustomerUsecase(
 	graphApi service.GraphAPI,
 	fileTransfer service.FileService,
 	rodutRepo repository.RodutRepository,
+	slackService service.SlackService,
+	openaiService service.OpenaiService,
 ) CustomerUsecase {
 	return &customerUsecase{
 		baseRepo:        baseRepo,
@@ -58,24 +62,26 @@ func NewCustomerUsecase(
 		graphApi:        graphApi,
 		fileTransfer:    fileTransfer,
 		rodutRepo:       rodutRepo,
+		slackService:    slackService,
+		openaiService:   openaiService,
 	}
 }
 
 func (c *customerUsecase) FindAll(ctx context.Context, query req.CustomerQuery) (*res.Customers, error) {
 
-	var instagramTokenStatus *model.InstagramTokenStatus
+	var instagramTokenStatus *entity.InstagramTokenStatus
 	if query.InstagramTokenStatus != nil {
-		i := model.ConvertToInstagramTokenStatus(query.InstagramTokenStatus)
-		if i == model.InstagramTokenStatusUnknown {
+		i := entity.ConvertToInstagramTokenStatus(query.InstagramTokenStatus)
+		if i == entity.InstagramTokenStatusUnknown {
 			return nil, arootErr.ErrInvalidInstagramTokenStatus
 		}
 		instagramTokenStatus = &i
 	}
 
-	var paymentStatus *model.PaymentStatus
+	var paymentStatus *entity.PaymentStatus
 	if query.PaymentType != nil {
-		p := model.ConvertToPaymentStatus(query.PaymentType)
-		if p == model.PaymentStatusUnknown {
+		p := entity.ConvertToPaymentStatus(query.PaymentType)
+		if p == entity.PaymentStatusUnknown {
 			return nil, arootErr.ErrInvalidInstagramTokenStatus
 		}
 		paymentStatus = &p
@@ -151,6 +157,7 @@ func (c *customerUsecase) FetchAndPost(ctx context.Context, customerID int) (*re
 		return nil, err
 	}
 
+	// 投稿済みのMediaIDを一覧で取得する
 	linkedMediaIDs, err := c.postService.GetLinkedMediaIDs(ctx, customerID)
 	if err != nil {
 		return nil, err
@@ -162,11 +169,12 @@ func (c *customerUsecase) FetchAndPost(ctx context.Context, customerID int) (*re
 			continue
 		}
 
-		// 一時フォルダを作り、メディアをダウンロード
+		// 一時フォルダを作る
 		if err := c.fileTransfer.MakeTempDirectory(customerID); err != nil {
 			return nil, err
 		}
 
+		// メディアをダウンロード
 		fileList, err := c.fileTransfer.DownloadMediaFiles(ctx, customerID, instagramMedia)
 		if err != nil {
 			return nil, err
@@ -178,25 +186,31 @@ func (c *customerUsecase) FetchAndPost(ctx context.Context, customerID int) (*re
 			return nil, err
 		}
 
+		// ワードプレスに記事を投稿
 		createPost := external.NewWordpressPost(instagramMedia, wordpressMedia)
 		wordpressResp, err := c.rodutRepo.CreatePost(ctx, customer.WordpressUrl, createPost)
 		if err != nil {
 			return nil, err
 		}
-
-		if err := c.postRepo.Save(ctx, &model.Post{
+		post := &model.Post{
 			CustomerID:       customerID,
 			InstagramMediaID: instagramMedia.ID,
 			InstagramLink:    instagramMedia.MediaURL,
 			WordpressMediaID: wordpressResp.PostId,
 			WordpressLink:    wordpressResp.PostUrl,
-		}); err != nil {
+		}
+
+		// 投稿をDBに保存
+		if err := c.postRepo.Save(ctx, post); err != nil {
 			return nil, err
 		}
 
+		// 一時ディレクトリを削除
 		if err := c.fileTransfer.RemoveTempDirectory(customerID); err != nil {
 			return nil, err
 		}
+
+		_ = c.slackService.Log(ctx, customer, post)
 	}
 	return &res.Message{Message: "ok"}, nil
 }
@@ -242,10 +256,42 @@ func (c *customerUsecase) GenerateLongToken(ctx context.Context, customerID int,
 	if err != nil {
 		return nil, err
 	}
-	customer.InstagramTokenStatus = util.Pointer(model.InstagramTokenStatusActive)
+	customer.InstagramTokenStatus = entity.InstagramTokenStatusActive
 	customer.FacebookToken = &authTokenResp.AccessToken
 	if err := c.customerRepo.Save(ctx, customer); err != nil {
 		return nil, err
 	}
+	return &res.Message{Message: "ok"}, nil
+}
+
+func (c *customerUsecase) RefreshToken(ctx context.Context, customerID int) (resp *res.Message, err error) {
+	tx := c.baseRepo.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			_ = tx.Commit()
+		}
+	}()
+
+	customer, err := c.customerRepo.FirstTx(ctx, &filter.CustomerFilter{ID: &customerID}, tx)
+	if err != nil {
+		return nil, err
+	}
+	if !customer.IsLinked() {
+		return nil, arootErr.ErrInstagramNotLinked
+	}
+	authTokenResp, err := c.graphApi.GetOAuthAccessToken(ctx, *customer.FacebookToken)
+	if err != nil {
+		return nil, err
+	}
+	customer.FacebookToken = &authTokenResp.AccessToken
+	if err := c.customerRepo.Save(ctx, customer); err != nil {
+		return nil, err
+	}
+
 	return &res.Message{Message: "ok"}, nil
 }

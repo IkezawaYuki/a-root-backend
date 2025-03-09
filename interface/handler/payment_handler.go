@@ -23,6 +23,11 @@ func NewPaymentHandler(customerUsecase usecase.CustomerUsecase) PaymentHandler {
 	}
 }
 
+const (
+	paymentFailed  = "invoice.payment_failed"
+	paymentSuccess = "invoice.payment_success"
+)
+
 func (p *paymentHandler) HandleWebhook(c *gin.Context) {
 	const MaxBodyBytes = int64(65536)
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MaxBodyBytes)
@@ -48,10 +53,11 @@ func (p *paymentHandler) HandleWebhook(c *gin.Context) {
 
 	// イベントタイプに応じた処理
 	switch event.Type {
-	case "invoice.payment_failed":
+	case paymentFailed:
+		customerID := event.Data.Object["customer"]
+		fmt.Printf("Customer ID: %v\n", customerID)
+	case paymentSuccess:
 
-	case "invoice.payment_succeeded":
-		
 	default:
 		_, _ = fmt.Fprintf(os.Stderr, "Unhandled event type: %s\n", event.Type)
 	}

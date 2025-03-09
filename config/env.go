@@ -22,6 +22,7 @@ type Environment struct {
 	SlackWebhookURL        string `envconfig:"SLACK_WEBHOOK_URL"`
 	RodutKey               string `envconfig:"RODUT_KEY"`
 	StripeEndpointSecret   string `envconfig:"STRIPE_ENDPOINT_SECRET"`
+	OpenAiApiKey           string `envconfig:"OPENAI_API_KEY"`
 }
 
 var Env Environment

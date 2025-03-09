@@ -1,6 +1,7 @@
 package di
 
 import (
+	"IkezawaYuki/a-root-backend/config"
 	"IkezawaYuki/a-root-backend/infrastructure"
 	"IkezawaYuki/a-root-backend/service"
 )
@@ -45,5 +46,12 @@ func NewFileTransfer() service.FileService {
 func NewSlackService() service.SlackService {
 	return service.NewSlackService(
 		infrastructure.NewHttpClient(),
+	)
+}
+
+func NewOpenaiService() service.OpenaiService {
+	return service.NewOpenaiService(
+		infrastructure.NewOpenAI(config.Env.OpenAiApiKey),
+		NewRedisRepository(),
 	)
 }

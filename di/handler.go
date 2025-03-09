@@ -15,3 +15,9 @@ func NewAdminHandler() handler.AdminHandler {
 		NewAdminUsecase(),
 	)
 }
+
+func NewBatchHandler() handler.BatchHandler {
+	return handler.NewBatchHandler(
+		NewBatchUsecase(),
+	)
+}

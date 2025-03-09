@@ -46,16 +46,41 @@ func main() {
 	di.Connection()
 	customerHandler := di.NewCustomerHandler()
 	adminHandler := di.NewAdminHandler()
+	batchHandler := di.NewBatchHandler()
 
 	v1 := r.Group("/v1")
 	{
 		customer := v1.Group("/customer")
 		{
 			customer.GET("/me", customerHandler.GetMe)
+			customer.GET("/posts", customerHandler.GetPosts)
+			customer.POST("/login", customerHandler.Login)
+			customer.GET("/instagram", customerHandler.FetchInstagramPosts)
+			customer.POST("/instagram", customerHandler.FetchAndPosts)
 		}
 		admin := v1.Group("/admin")
 		{
-			admin.GET("/admins", adminHandler.GetAdmins)
+			admins := admin.Group("/admins")
+			{
+				admins.GET("/", adminHandler.GetAdmins)
+				admins.GET("/:admin_id", adminHandler.GetAdmin)
+				admins.POST("/", adminHandler.CreateAdmin)
+				admins.PUT("/:admin_id", adminHandler.UpdateAdmin)
+				admins.DELETE("/:admin_id", adminHandler.DeleteAdmin)
+			}
+			customers := admin.Group("/customers")
+			{
+				customers.GET("/", adminHandler.GetCustomers)
+				customers.GET("/:customer_id", adminHandler.GetCustomer)
+				customers.POST("/", adminHandler.CreateCustomer)
+				customers.PUT("/:customer_id", adminHandler.UpdateCustomer)
+				customers.DELETE("/:customer_id", adminHandler.DeleteCustomer)
+			}
+		}
+		batch := v1.Group("/batch")
+		{
+			batch.POST("/", batchHandler.SyncInstagramToWordPress)
+			batch.POST("/", batchHandler.RefreshToken)
 		}
 	}
 

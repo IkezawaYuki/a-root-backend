@@ -70,14 +70,39 @@ func (h AdminHandler) GetAdmins(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// DeleteAdmin
-// @Summary 管理者ユーザーを削除する
+// GetAdmin
+// @Summary 管理者ユーザーを取得する
 // @Description
 // @Tags admin
 // @Accept application/json
 // @Produce application/json
+// @param admin_id path string true "管理者ID"
+// @Success 200 {object} res.Admins
+// @Router /admin/admins/{admin_id} [GET]
+func (h AdminHandler) GetAdmin(c *gin.Context) {
+	slog.Info("GetAdmin is invoked")
+	adminID, err := strconv.Atoi(c.Param("admin_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.adminUsecase.GetAdmin(c.Request.Context(), adminID)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+// DeleteAdmin
+// @Summary 管理者ユーザーを削除する
+// @Description
+// @Tags admin
+// @param admin_id path string true "管理者ID"
+// @Accept application/json
+// @Produce application/json
 // @Success 202 {object} res.Message
-// @Router /admin/{admin_id} [DELETE]
+// @Router /admin/admins/{admin_id} [DELETE]
 func (h AdminHandler) DeleteAdmin(c *gin.Context) {
 	slog.Info("DeleteAdmin is invoked")
 	p := c.Param("admin_id")
@@ -101,7 +126,7 @@ func (h AdminHandler) DeleteAdmin(c *gin.Context) {
 // @Accept application/json
 // @Produce application/json
 // @Success 202 {object} res.Admin
-// @Router /admin/{admin_id} [PUT]
+// @Router /admin/admins/{admin_id} [PUT]
 func (h AdminHandler) UpdateAdmin(c *gin.Context) {
 	slog.Info("UpdateAdmin is invoked")
 	var body req.UpdateAdminBody
@@ -109,8 +134,7 @@ func (h AdminHandler) UpdateAdmin(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	p := c.Param("admin_id")
-	adminID, err := strconv.Atoi(p)
+	adminID, err := strconv.Atoi(c.Param("admin_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -161,13 +185,87 @@ func (h AdminHandler) GetCustomers(c *gin.Context) {
 // @Router /admin/customers/{customer_id} [GET]
 func (h AdminHandler) GetCustomer(c *gin.Context) {
 	slog.Info("GetCustomer is invoked")
-	p := c.Param("customer_id")
-	customerID, err := strconv.Atoi(p)
+	customerID, err := strconv.Atoi(c.Param("customer_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	resp, err := h.adminUsecase.GetCustomer(c.Request.Context(), customerID)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+// UpdateCustomer
+// @Summary 顧客情報を更新する
+// @Description
+// @Tags admin
+// @Accept application/json
+// @Produce application/json
+// @Success 200 {object} res.Customer
+// @Router /admin/customers/{customer_id} [PUT]
+func (h AdminHandler) UpdateCustomer(c *gin.Context) {
+	slog.Info("UpdateCustomer is invoked")
+	customerID, err := strconv.Atoi(c.Param("customer_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var body req.UpdateCustomerBody
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.adminUsecase.UpdateCustomer(c.Request.Context(), customerID, body)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+// CreateCustomer
+// @Summary 顧客情報を登録する
+// @Description
+// @Tags admin
+// @Accept application/json
+// @Produce application/json
+// @Success 200 {object} res.Customer
+// @Router /admin/customers [POST]
+func (h AdminHandler) CreateCustomer(c *gin.Context) {
+	slog.Info("CreateCustomer is invoked")
+
+	var body req.CreateCustomerBody
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.adminUsecase.CreateCustomer(c.Request.Context(), body)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+// DeleteCustomer
+// @Summary 顧客情報を削除する
+// @Description
+// @Tags admin
+// @Accept application/json
+// @Produce application/json
+// @Success 200 {object} res.Customer
+// @Router /admin/customers/{customer_id} [GET]
+func (h AdminHandler) DeleteCustomer(c *gin.Context) {
+	slog.Info("DeleteCustomer is invoked")
+	customerID, err := strconv.Atoi(c.Param("customer_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.adminUsecase.DeleteCustomer(c.Request.Context(), customerID)
 	if err != nil {
 		handleError(c, err)
 		return

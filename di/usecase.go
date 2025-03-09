@@ -27,6 +27,8 @@ func NewCustomerUsecase() usecase.CustomerUsecase {
 		NewGraphAPI(),
 		NewFileTransfer(),
 		NewRodutRepository(),
+		NewSlackService(),
+		NewOpenaiService(),
 	)
 }
 
