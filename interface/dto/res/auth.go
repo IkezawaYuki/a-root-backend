@@ -1,5 +1,6 @@
 package res
 
 type Auth struct {
-	Token string `json:"token"`
+	UserID int    `json:"user_id"`
+	Token  string `json:"token"`
 }

@@ -2,7 +2,6 @@ package filter
 
 import (
 	"IkezawaYuki/a-root-backend/domain/entity"
-	"IkezawaYuki/a-root-backend/domain/model"
 	"gorm.io/gorm"
 )
 
@@ -15,8 +14,8 @@ type CustomerFilter struct {
 	PartialName          *string
 	PartialWordpressUrl  *string
 	PaymentType          *entity.PaymentType
-	PaymentStatus        *model.PaymentStatus
-	InstagramTokenStatus *model.InstagramTokenStatus
+	PaymentStatus        *entity.PaymentStatus
+	InstagramTokenStatus *entity.InstagramTokenStatus
 
 	Limit  *int
 	Offset *int
@@ -30,7 +29,7 @@ func (c *CustomerFilter) GenerateMods(db *gorm.DB) *gorm.DB {
 		db = db.Where("email = ?", *c.Email)
 	}
 	if c.PartialName != nil {
-		db = db.Where("partial_name like '%?%'", *c.PartialName)
+		db = db.Where("name like '%?%'", *c.PartialName)
 	}
 	if c.InstagramTokenStatus != nil {
 		db = db.Where("instagram_token_status = ?", *c.InstagramTokenStatus)

@@ -7,6 +7,7 @@ import (
 )
 
 type RedisRepository interface {
+	GetClient() *redis.Client
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
 	Get(ctx context.Context, key string) (string, error)
 }
@@ -17,6 +18,10 @@ type redisRepository struct {
 
 func NewRedisRepository(client *redis.Client) RedisRepository {
 	return &redisRepository{client: client}
+}
+
+func (r *redisRepository) GetClient() *redis.Client {
+	return r.client
 }
 
 func (r *redisRepository) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {

@@ -121,18 +121,21 @@ func (a *adminUsecase) CreateAdmin(ctx context.Context, body req.CreateAdminBody
 }
 
 func (a *adminUsecase) Login(ctx context.Context, user req.User) (*res.Auth, error) {
-	customer, err := a.adminService.FindByEmail(ctx, user.Email)
+	admin, err := a.adminService.FindByEmail(ctx, user.Email)
 	if err != nil {
 		return nil, arootErr.ErrNotFound
 	}
-	if err := a.authService.CheckPassword(user, customer.Password); err != nil {
+	if err := a.authService.CheckPassword(user, admin.Password); err != nil {
 		return nil, err
 	}
-	token, err := a.authService.GenerateJWTAdmin(customer)
+	token, err := a.authService.GenerateJWTAdmin(admin)
 	if err != nil {
 		return nil, err
 	}
-	return &res.Auth{Token: token}, nil
+	return &res.Auth{
+		Token:  token,
+		UserID: int(admin.ID),
+	}, nil
 }
 
 func (a *adminUsecase) GetCustomers(ctx context.Context, query req.CustomerQuery) (*res.Customers, error) {

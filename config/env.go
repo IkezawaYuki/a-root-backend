@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"log"
 )
@@ -28,9 +27,6 @@ type Environment struct {
 var Env Environment
 
 func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Print("No .env file found")
-	}
 	if err := envconfig.Process("", &Env); err != nil {
 		log.Fatal(err)
 	}
