@@ -20,3 +20,12 @@ type CreateCustomerBody struct {
 type UpdateCustomerBody struct {
 	Name string `json:"name"`
 }
+
+type EmailBody struct {
+	Email string `json:"email" example:"yuki@gmail.com"`
+}
+
+type RegisterCustomerBody struct {
+	Password     string `json:"password"`
+	WordpressURL string `json:"wordpress_url"`
+}

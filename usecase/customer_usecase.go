@@ -12,6 +12,7 @@ import (
 	"IkezawaYuki/a-root-backend/service"
 	"context"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"slices"
 )
 
@@ -23,6 +24,7 @@ type CustomerUsecase interface {
 	FetchInstagramPosts(ctx context.Context, customerID int) (*external.InstagramPosts, error)
 	GenerateLongToken(ctx context.Context, customerID int, body req.AuthTokenBody) (*res.Message, error)
 	RefreshToken(ctx context.Context, customerID int) (*res.Message, error)
+	Register(ctx context.Context, customerID int, body req.RegisterCustomerBody) (*res.Customer, error)
 }
 
 type customerUsecase struct {
@@ -294,4 +296,26 @@ func (c *customerUsecase) RefreshToken(ctx context.Context, customerID int) (res
 	}
 
 	return &res.Message{Message: "ok"}, nil
+}
+
+func (c *customerUsecase) Register(ctx context.Context, customerID int, body req.RegisterCustomerBody) (*res.Customer, error) {
+	customer, err := c.customerService.FindByID(ctx, customerID)
+	if err != nil {
+		return nil, err
+	}
+	titleResp, err := c.rodutRepo.GetTitle(ctx, body.WordpressURL)
+	if err != nil {
+		return nil, err
+	}
+	customer.Name = titleResp.Title
+	customer.WordpressUrl = body.WordpressURL
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	customer.Password = string(passwordHash)
+	if err := c.customerRepo.Save(ctx, customer); err != nil {
+		return nil, err
+	}
+	return res.GetCustomer(customer), nil
 }

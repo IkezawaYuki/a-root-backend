@@ -1,6 +1,7 @@
 package service
 
 import (
+	"IkezawaYuki/a-root-backend/domain/entity"
 	"IkezawaYuki/a-root-backend/domain/model"
 	"IkezawaYuki/a-root-backend/infrastructure"
 	"IkezawaYuki/a-root-backend/interface/filter"
@@ -32,7 +33,7 @@ func NewCustomerService(
 
 func (s *customerService) FindAuthCustomers(ctx context.Context) ([]*model.Customer, error) {
 	return s.customerRepository.Get(ctx, &filter.CustomerFilter{
-		InstagramTokenStatus: util.Pointer(model.InstagramTokenStatusActive),
+		InstagramTokenStatus: util.Pointer(entity.InstagramTokenStatusActive),
 	})
 }
 

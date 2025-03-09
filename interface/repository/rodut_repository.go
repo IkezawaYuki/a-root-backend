@@ -10,6 +10,7 @@ import (
 )
 
 type RodutRepository interface {
+	GetTitle(ctx context.Context, wordpressUrl string) (*external.TitleResponse, error)
 	CreatePost(ctx context.Context, wordpressUrl string, post external.WordpressPost) (*external.CreatePostResponse, error)
 	UploadMedia(ctx context.Context, wordpressUrl string, filePath string) (*external.UploadMediaResponse, error)
 	UploadMedias(ctx context.Context, wordpressUrl string, filePath []string) ([]*external.UploadMediaResponse, error)
@@ -27,6 +28,22 @@ type rodutRepository struct {
 	httpClient infrastructure.HttpClient
 	ApiKey     string
 	AdminEmail string
+}
+
+const titleEndpoint = "title"
+
+func (r *rodutRepository) GetTitle(ctx context.Context, wordpressUrl string) (*external.TitleResponse, error) {
+	url := fmt.Sprintf("https://%s/rodut/v1/%s", wordpressUrl, titleEndpoint)
+	responseBody, err := r.httpClient.GetRequest(ctx, url, "")
+	if err != nil {
+		return nil, err
+	}
+	resp := external.TitleResponse{}
+	err = json.Unmarshal(responseBody, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
 const createPostEndpoint = "create-post"

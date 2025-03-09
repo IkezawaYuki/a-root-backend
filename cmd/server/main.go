@@ -3,6 +3,7 @@ package main
 import (
 	"IkezawaYuki/a-root-backend/di"
 	_ "IkezawaYuki/a-root-backend/docs"
+	"IkezawaYuki/a-root-backend/interface/middleware"
 	"context"
 	"errors"
 	"fmt"
@@ -50,15 +51,15 @@ func main() {
 
 	v1 := r.Group("/v1")
 	{
-		customer := v1.Group("/customer")
+		customer := v1.Group("/customer", middleware.Customer)
 		{
 			customer.GET("/me", customerHandler.GetMe)
 			customer.GET("/posts", customerHandler.GetPosts)
 			customer.POST("/login", customerHandler.Login)
 			customer.GET("/instagram", customerHandler.FetchInstagramPosts)
-			customer.POST("/instagram", customerHandler.FetchAndPosts)
+			customer.POST("/sync", customerHandler.Sync)
 		}
-		admin := v1.Group("/admin")
+		admin := v1.Group("/admin", middleware.Admin)
 		{
 			admins := admin.Group("/admins")
 			{
@@ -77,10 +78,10 @@ func main() {
 				customers.DELETE("/:customer_id", adminHandler.DeleteCustomer)
 			}
 		}
-		batch := v1.Group("/batch")
+		batch := v1.Group("/batch", middleware.Batch)
 		{
-			batch.POST("/", batchHandler.SyncInstagramToWordPress)
-			batch.POST("/", batchHandler.RefreshToken)
+			batch.POST("/sync", batchHandler.SyncInstagramToWordPress)
+			batch.POST("/refresh", batchHandler.RefreshToken)
 		}
 	}
 

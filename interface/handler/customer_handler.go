@@ -103,7 +103,7 @@ func (h CustomerHandler) GetPosts(c *gin.Context) {
 // @Accept application/json
 // @Produce application/json
 // @Success 200 {object} res.Customer
-// @Router /customer/instagram/posts [GET]
+// @Router /customer/instagram [GET]
 func (h CustomerHandler) FetchInstagramPosts(c *gin.Context) {
 	slog.Info("FetchInstagramPosts is invoked")
 	customerID, ok := c.Get("customer_id")
@@ -119,16 +119,16 @@ func (h CustomerHandler) FetchInstagramPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// FetchAndPosts
+// Sync
 // @Summary インスタグラム上の投稿データをWordpressに連携する
 // @Description
 // @Tags customer
 // @Accept application/json
 // @Produce application/json
 // @Success 200 {object} res.Message
-// @Router /customer/fetch_posts [POST]
-func (h CustomerHandler) FetchAndPosts(c *gin.Context) {
-	slog.Info("FetchAndPosts is invoked")
+// @Router /customer/sync [POST]
+func (h CustomerHandler) Sync(c *gin.Context) {
+	slog.Info("Sync is invoked")
 	customerID, ok := c.Get("customer_id")
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid customer_id"})
