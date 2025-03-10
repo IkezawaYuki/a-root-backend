@@ -306,6 +306,5 @@ func (h AdminHandler) Login(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-
 	c.JSON(http.StatusOK, resp)
 }

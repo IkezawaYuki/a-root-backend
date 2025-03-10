@@ -22,6 +22,7 @@ type Environment struct {
 	RodutKey               string `envconfig:"RODUT_KEY"`
 	StripeEndpointSecret   string `envconfig:"STRIPE_ENDPOINT_SECRET"`
 	OpenAiApiKey           string `envconfig:"OPENAI_API_KEY"`
+	SendgridApiKey         string `envconfig:"SENDGRID_API_KEY"`
 }
 
 var Env Environment
