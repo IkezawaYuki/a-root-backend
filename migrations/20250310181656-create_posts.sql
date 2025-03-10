@@ -1,6 +1,6 @@
 
 -- +migrate Up
-CREATE TABLE IF NOT EXISTS `customers` (
+CREATE TABLE IF NOT EXISTS `posts` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `customer_id` BIGINT UNSIGNED NOT NULL,
     `instagram_media_id` VARCHAR(255) NOT NULL,
@@ -14,4 +14,4 @@ CREATE TABLE IF NOT EXISTS `customers` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- +migrate Down
-DROP TABLE IF EXISTS `customers`;
+DROP TABLE IF EXISTS `posts`;
