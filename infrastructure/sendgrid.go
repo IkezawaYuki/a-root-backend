@@ -7,6 +7,8 @@ import (
 )
 
 type MailDriver interface {
+	Send(from, to, subject, body string) error
+	SendBulk(from string, to []string, subject, body string) error
 }
 
 func NewSendgridDriver(
