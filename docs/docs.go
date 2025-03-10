@@ -85,6 +85,86 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/admins/{admin_id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "管理者ユーザーを取得する",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "管理者ID",
+                        "name": "admin_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.Admins"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "管理者ユーザーを更新する",
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/res.Admin"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "管理者ユーザーを削除する",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "管理者ID",
+                        "name": "admin_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/res.Message"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/customers": {
             "get": {
                 "consumes": [
@@ -137,6 +217,26 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "顧客情報を登録する",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.Customer"
+                        }
+                    }
+                }
             }
         },
         "/admin/customers/{customer_id}": {
@@ -150,7 +250,7 @@ const docTemplate = `{
                 "tags": [
                     "admin"
                 ],
-                "summary": "顧客情報を取得する",
+                "summary": "顧客情報を削除する",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -159,9 +259,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/admin/{admin_id}": {
+            },
             "put": {
                 "consumes": [
                     "application/json"
@@ -172,38 +270,18 @@ const docTemplate = `{
                 "tags": [
                     "admin"
                 ],
-                "summary": "管理者ユーザーを更新する",
+                "summary": "顧客情報を更新する",
                 "responses": {
-                    "202": {
-                        "description": "Accepted",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/res.Admin"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "admin"
-                ],
-                "summary": "管理者ユーザーを削除する",
-                "responses": {
-                    "202": {
-                        "description": "Accepted",
-                        "schema": {
-                            "$ref": "#/definitions/res.Message"
+                            "$ref": "#/definitions/res.Customer"
                         }
                     }
                 }
             }
         },
-        "/customer/fetch_posts": {
+        "/batch/refresh": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -214,7 +292,7 @@ const docTemplate = `{
                 "tags": [
                     "customer"
                 ],
-                "summary": "インスタグラム上の投稿データをWordpressに連携する",
+                "summary": "トークンを更新する",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -225,7 +303,29 @@ const docTemplate = `{
                 }
             }
         },
-        "/customer/instagram/posts": {
+        "/batch/sync": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customer"
+                ],
+                "summary": "[Instagram=\u003eWordPress]連携を実行する",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/customer/instagram": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -337,6 +437,28 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/customer/sync": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customer"
+                ],
+                "summary": "インスタグラム上の投稿データをWordpressに連携する",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.Message"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -402,6 +524,9 @@ const docTemplate = `{
             "properties": {
                 "token": {
                     "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },

@@ -7,12 +7,14 @@ import (
 func NewCustomerHandler() handler.CustomerHandler {
 	return handler.NewCustomerHandler(
 		NewCustomerUsecase(),
+		redisClient,
 	)
 }
 
 func NewAdminHandler() handler.AdminHandler {
 	return handler.NewAdminHandler(
 		NewAdminUsecase(),
+		redisClient,
 	)
 }
 

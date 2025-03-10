@@ -42,6 +42,8 @@ definitions:
     properties:
       token:
         type: string
+      user_id:
+        type: integer
     type: object
   res.Customer:
     properties:
@@ -94,33 +96,6 @@ info:
   title: a-root-backend
   version: 1.0.0
 paths:
-  /admin/{admin_id}:
-    delete:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/res.Message'
-      summary: 管理者ユーザーを削除する
-      tags:
-      - admin
-    put:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "202":
-          description: Accepted
-          schema:
-            $ref: '#/definitions/res.Admin'
-      summary: 管理者ユーザーを更新する
-      tags:
-      - admin
   /admin/admins:
     get:
       consumes:
@@ -165,6 +140,58 @@ paths:
       summary: 管理者ユーザーを作成する
       tags:
       - admin
+  /admin/admins/{admin_id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: 管理者ID
+        in: path
+        name: admin_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/res.Message'
+      summary: 管理者ユーザーを削除する
+      tags:
+      - admin
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 管理者ID
+        in: path
+        name: admin_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/res.Admins'
+      summary: 管理者ユーザーを取得する
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/res.Admin'
+      summary: 管理者ユーザーを更新する
+      tags:
+      - admin
   /admin/customers:
     get:
       consumes:
@@ -200,6 +227,19 @@ paths:
       summary: 顧客一覧を取得する
       tags:
       - admin
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/res.Customer'
+      summary: 顧客情報を登録する
+      tags:
+      - admin
   /admin/customers/{customer_id}:
     get:
       consumes:
@@ -211,10 +251,23 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/res.Customer'
-      summary: 顧客情報を取得する
+      summary: 顧客情報を削除する
       tags:
       - admin
-  /customer/fetch_posts:
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/res.Customer'
+      summary: 顧客情報を更新する
+      tags:
+      - admin
+  /batch/refresh:
     post:
       consumes:
       - application/json
@@ -225,10 +278,24 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/res.Message'
-      summary: インスタグラム上の投稿データをWordpressに連携する
+      summary: トークンを更新する
       tags:
       - customer
-  /customer/instagram/posts:
+  /batch/sync:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/res.Message'
+      summary: '[Instagram=>WordPress]連携を実行する'
+      tags:
+      - customer
+  /customer/instagram:
     get:
       consumes:
       - application/json
@@ -298,6 +365,20 @@ paths:
           schema:
             $ref: '#/definitions/res.Customer'
       summary: 連携済みの投稿データを取得する
+      tags:
+      - customer
+  /customer/sync:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/res.Message'
+      summary: インスタグラム上の投稿データをWordpressに連携する
       tags:
       - customer
 securityDefinitions:

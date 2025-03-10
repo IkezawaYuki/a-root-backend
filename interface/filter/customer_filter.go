@@ -2,7 +2,6 @@ package filter
 
 import (
 	"IkezawaYuki/a-root-backend/domain/entity"
-	"IkezawaYuki/a-root-backend/domain/model"
 	"gorm.io/gorm"
 )
 
@@ -15,8 +14,8 @@ type CustomerFilter struct {
 	PartialName          *string
 	PartialWordpressUrl  *string
 	PaymentType          *entity.PaymentType
-	PaymentStatus        *model.PaymentStatus
-	InstagramTokenStatus *model.InstagramTokenStatus
+	PaymentStatus        *entity.PaymentStatus
+	InstagramTokenStatus *entity.InstagramTokenStatus
 
 	Limit  *int
 	Offset *int

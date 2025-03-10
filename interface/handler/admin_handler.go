@@ -1,8 +1,13 @@
 package handler
 
 import (
+	"IkezawaYuki/a-root-backend/domain/entity"
 	"IkezawaYuki/a-root-backend/interface/dto/req"
 	_ "IkezawaYuki/a-root-backend/interface/dto/res"
+	"IkezawaYuki/a-root-backend/interface/session"
+	"github.com/redis/go-redis/v9"
+
+	//"IkezawaYuki/a-root-backend/interface/middleware"
 	"IkezawaYuki/a-root-backend/usecase"
 	"github.com/gin-gonic/gin"
 	"log/slog"
@@ -12,11 +17,13 @@ import (
 
 type AdminHandler struct {
 	adminUsecase usecase.AdminUsecase
+	redisClient  *redis.Client
 }
 
-func NewAdminHandler(adminUsecase usecase.AdminUsecase) AdminHandler {
+func NewAdminHandler(adminUsecase usecase.AdminUsecase, redisClient *redis.Client) AdminHandler {
 	return AdminHandler{
 		adminUsecase: adminUsecase,
+		redisClient:  redisClient,
 	}
 }
 
@@ -294,5 +301,11 @@ func (h AdminHandler) Login(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
+	err = session.SetLoginSession(c, entity.ARootAdmin, h.redisClient, resp.UserID)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, resp)
 }

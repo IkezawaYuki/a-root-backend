@@ -11,7 +11,6 @@ import (
 	"IkezawaYuki/a-root-backend/interface/repository"
 	"IkezawaYuki/a-root-backend/service"
 	"context"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"slices"
 )
@@ -131,16 +130,19 @@ func (c *customerUsecase) GetCustomer(ctx context.Context, id int) (*res.Custome
 func (c *customerUsecase) Login(ctx context.Context, user req.User) (*res.Auth, error) {
 	customer, err := c.customerService.FindByEmail(ctx, user.Email)
 	if err != nil {
-		return nil, err
+		return nil, arootErr.ErrAuthorization
 	}
 	if err := c.authService.CheckPassword(user, customer.Password); err != nil {
-		return nil, fmt.Errorf("invalid password: %w", err)
+		return nil, arootErr.ErrAuthorization
 	}
 	token, err := c.authService.GenerateJWTCustomer(customer)
 	if err != nil {
 		return nil, err
 	}
-	return &res.Auth{Token: token}, nil
+	return &res.Auth{
+		Token:  token,
+		UserID: int(customer.ID),
+	}, nil
 }
 
 func (c *customerUsecase) FetchAndPost(ctx context.Context, customerID int) (*res.Message, error) {

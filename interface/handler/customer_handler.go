@@ -1,46 +1,27 @@
 package handler
 
 import (
+	"IkezawaYuki/a-root-backend/domain/entity"
 	"IkezawaYuki/a-root-backend/interface/dto/req"
 	_ "IkezawaYuki/a-root-backend/interface/dto/res"
+	"IkezawaYuki/a-root-backend/interface/session"
 	"IkezawaYuki/a-root-backend/usecase"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"log/slog"
 	"net/http"
 )
 
 type CustomerHandler struct {
 	customerUsecase usecase.CustomerUsecase
+	redisClient     *redis.Client
 }
 
-func NewCustomerHandler(customerUsecase usecase.CustomerUsecase) CustomerHandler {
+func NewCustomerHandler(customerUsecase usecase.CustomerUsecase, redisClient *redis.Client) CustomerHandler {
 	return CustomerHandler{
 		customerUsecase: customerUsecase,
+		redisClient:     redisClient,
 	}
-}
-
-// Login
-// @Summary ログインする
-// @Description
-// @Tags customer
-// @Accept application/json
-// @Produce application/json
-// @param default body req.User true "ログイン情報"
-// @Success 200 {object} res.Auth
-// @Router /customer/login [POST]
-func (h CustomerHandler) Login(c *gin.Context) {
-	slog.Info("Login is invoked")
-	var user req.User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	resp, err := h.customerUsecase.Login(c.Request.Context(), user)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-	c.JSON(http.StatusOK, resp)
 }
 
 // GetMe
@@ -53,7 +34,7 @@ func (h CustomerHandler) Login(c *gin.Context) {
 // @Router /customer/me [GET]
 func (h CustomerHandler) GetMe(c *gin.Context) {
 	slog.Info("GetMe is invoked")
-	customerID, ok := c.Get("customer_id")
+	customerID, ok := c.Get(entity.UserSession)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid customer_id"})
 		return
@@ -135,6 +116,35 @@ func (h CustomerHandler) Sync(c *gin.Context) {
 		return
 	}
 	resp, err := h.customerUsecase.FetchAndPost(c.Request.Context(), customerID.(int))
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+// Login
+// @Summary ログインする
+// @Description
+// @Tags customer
+// @Accept application/json
+// @Produce application/json
+// @param default body req.User true "ログイン情報"
+// @Success 200 {object} res.Auth
+// @Router /customer/login [POST]
+func (h CustomerHandler) Login(c *gin.Context) {
+	slog.Info("Login is invoked")
+	var user req.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.customerUsecase.Login(c.Request.Context(), user)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	err = session.SetLoginSession(c, entity.ARootAdmin, h.redisClient, resp.UserID)
 	if err != nil {
 		handleError(c, err)
 		return
