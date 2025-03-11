@@ -34,12 +34,8 @@ func NewCustomerHandler(customerUsecase usecase.CustomerUsecase, redisClient *re
 // @Router /customer/me [GET]
 func (h CustomerHandler) GetMe(c *gin.Context) {
 	slog.Info("GetMe is invoked")
-	customerID, ok := c.Get(entity.UserSession)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid customer_id"})
-		return
-	}
-	resp, err := h.customerUsecase.GetCustomer(c.Request.Context(), customerID.(int))
+	customerID := c.MustGet("customer_id").(int)
+	resp, err := h.customerUsecase.GetCustomer(c.Request.Context(), customerID)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -59,17 +55,13 @@ func (h CustomerHandler) GetMe(c *gin.Context) {
 // @Router /customer/posts [GET]
 func (h CustomerHandler) GetPosts(c *gin.Context) {
 	slog.Info("GetPosts is invoked")
-	customerID, ok := c.Get("customer_id")
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid customer_id"})
-		return
-	}
+	customerID := c.MustGet("customer_id").(int)
 	var query req.PostQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	resp, err := h.customerUsecase.GetPosts(c.Request.Context(), customerID.(int), query)
+	resp, err := h.customerUsecase.GetPosts(c.Request.Context(), customerID, query)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -87,12 +79,8 @@ func (h CustomerHandler) GetPosts(c *gin.Context) {
 // @Router /customer/instagram [GET]
 func (h CustomerHandler) FetchInstagramPosts(c *gin.Context) {
 	slog.Info("FetchInstagramPosts is invoked")
-	customerID, ok := c.Get("customer_id")
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid customer_id"})
-		return
-	}
-	resp, err := h.customerUsecase.FetchInstagramPosts(c.Request.Context(), customerID.(int))
+	customerID := c.MustGet("customer_id").(int)
+	resp, err := h.customerUsecase.FetchInstagramPosts(c.Request.Context(), customerID)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -110,12 +98,8 @@ func (h CustomerHandler) FetchInstagramPosts(c *gin.Context) {
 // @Router /customer/sync [POST]
 func (h CustomerHandler) Sync(c *gin.Context) {
 	slog.Info("Sync is invoked")
-	customerID, ok := c.Get("customer_id")
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid customer_id"})
-		return
-	}
-	resp, err := h.customerUsecase.FetchAndPost(c.Request.Context(), customerID.(int))
+	customerID := c.MustGet("customer_id").(int)
+	resp, err := h.customerUsecase.FetchAndPost(c.Request.Context(), customerID)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -144,10 +128,83 @@ func (h CustomerHandler) Login(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	err = session.SetLoginSession(c, entity.ARootAdmin, h.redisClient, resp.UserID)
+	err = session.SetLoginSession(c, entity.ARootCustomer, h.redisClient, resp.UserID)
 	if err != nil {
 		handleError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+// TempRegister
+// @Summary ユーザーを登録する
+// @Description
+// @Tags admin
+// @Accept application/json
+// @Produce application/json
+// @param default body req.EmailBody true "メールアドレス"
+// @Success 201 {object} res.Message
+// @Router /customer/temp_register [POST]
+func (h CustomerHandler) TempRegister(c *gin.Context) {
+	slog.Info("TempRegister is invoked")
+	var email req.EmailBody
+	if err := c.ShouldBindJSON(&email); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.customerUsecase.TempRegister(c.Request.Context(), email)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusCreated, resp)
+}
+
+// CheckToken
+// @Summary トークンの検証
+// @Description
+// @Tags admin
+// @Accept application/json
+// @Produce application/json
+// @param default body req.Token true "トークン"
+// @Success 201 {object} res.Customer
+// @Router /customer/check_token [POST]
+func (h CustomerHandler) CheckToken(c *gin.Context) {
+	slog.Info("CheckToken is invoked")
+	var token req.Token
+	if err := c.ShouldBindJSON(&token); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.customerUsecase.CheckToken(c.Request.Context(), token.Token)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusCreated, resp)
+}
+
+// Register
+// @Summary ユーザーを登録する
+// @Description
+// @Tags admin
+// @Accept application/json
+// @Produce application/json
+// @param default body req.RegisterCustomer true "メールアドレス"
+// @Success 201 {object} res.Message
+// @Router /customer/register/ [POST]
+func (h CustomerHandler) Register(c *gin.Context) {
+	slog.Info("Register is invoked")
+	customerID := c.MustGet("customer_id").(int)
+	var customer req.RegisterCustomer
+	if err := c.ShouldBindJSON(&customer); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	resp, err := h.customerUsecase.Register(c.Request.Context(), customerID, customer)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusCreated, resp)
 }

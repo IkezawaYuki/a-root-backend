@@ -60,6 +60,8 @@ func main() {
 			customer.GET("/posts", customerHandler.GetPosts)
 			customer.GET("/instagram", customerHandler.FetchInstagramPosts)
 			customer.POST("/sync", customerHandler.Sync)
+			customer.POST("/temp_register", customerHandler.TempRegister)
+			customer.POST("/register", customerHandler.Register)
 		}
 		admin := v1.Group("/admin", middleware.Admin)
 		{

@@ -8,7 +8,6 @@ import (
 
 func NewAdminService() service.AdminService {
 	return service.NewAdminService(
-		NewCustomerRepository(),
 		NewAdminRepository(),
 	)
 }

@@ -1,6 +1,7 @@
 package di
 
 import (
+	"IkezawaYuki/a-root-backend/config"
 	"IkezawaYuki/a-root-backend/infrastructure"
 	"IkezawaYuki/a-root-backend/interface/repository"
 )
@@ -38,5 +39,12 @@ func NewRodutRepository() repository.RodutRepository {
 func NewRedisRepository() repository.RedisRepository {
 	return repository.NewRedisRepository(
 		redisClient,
+	)
+}
+
+func NewMailRepository() repository.MailRepository {
+	return repository.NewMailRepository(
+		NewMailDriver(),
+		config.Env.FromEmail,
 	)
 }

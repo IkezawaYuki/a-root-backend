@@ -11,8 +11,10 @@ import (
 	"IkezawaYuki/a-root-backend/interface/repository"
 	"IkezawaYuki/a-root-backend/service"
 	"context"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"slices"
+	"time"
 )
 
 type CustomerUsecase interface {
@@ -23,7 +25,9 @@ type CustomerUsecase interface {
 	FetchInstagramPosts(ctx context.Context, customerID int) (*external.InstagramPosts, error)
 	GenerateLongToken(ctx context.Context, customerID int, body req.AuthTokenBody) (*res.Message, error)
 	RefreshToken(ctx context.Context, customerID int) (*res.Message, error)
-	Register(ctx context.Context, customerID int, body req.RegisterCustomerBody) (*res.Customer, error)
+	Register(ctx context.Context, customerID int, body req.RegisterCustomer) (*res.Customer, error)
+	CheckToken(ctx context.Context, token string) (*res.Customer, error)
+	TempRegister(ctx context.Context, body req.EmailBody) (*res.Message, error)
 }
 
 type customerUsecase struct {
@@ -31,6 +35,8 @@ type customerUsecase struct {
 	postRepo        repository.PostRepository
 	customerRepo    repository.CustomerRepository
 	rodutRepo       repository.RodutRepository
+	redisRepo       repository.RedisRepository
+	mailRepo        repository.MailRepository
 	customerService service.CustomerService
 	authService     service.AuthService
 	postService     service.PostService
@@ -44,6 +50,8 @@ func NewCustomerUsecase(
 	baseRepo repository.BaseRepository,
 	postRepo repository.PostRepository,
 	customerRepo repository.CustomerRepository,
+	redisRepo repository.RedisRepository,
+	mailRepo repository.MailRepository,
 	customerSrv service.CustomerService,
 	authSrv service.AuthService,
 	postService service.PostService,
@@ -57,6 +65,8 @@ func NewCustomerUsecase(
 		baseRepo:        baseRepo,
 		postRepo:        postRepo,
 		customerRepo:    customerRepo,
+		redisRepo:       redisRepo,
+		mailRepo:        mailRepo,
 		customerService: customerSrv,
 		authService:     authSrv,
 		postService:     postService,
@@ -300,7 +310,7 @@ func (c *customerUsecase) RefreshToken(ctx context.Context, customerID int) (res
 	return &res.Message{Message: "ok"}, nil
 }
 
-func (c *customerUsecase) Register(ctx context.Context, customerID int, body req.RegisterCustomerBody) (*res.Customer, error) {
+func (c *customerUsecase) Register(ctx context.Context, customerID int, body req.RegisterCustomer) (*res.Customer, error) {
 	customer, err := c.customerService.FindByID(ctx, customerID)
 	if err != nil {
 		return nil, err
@@ -320,4 +330,29 @@ func (c *customerUsecase) Register(ctx context.Context, customerID int, body req
 		return nil, err
 	}
 	return res.GetCustomer(customer), nil
+}
+
+func (c *customerUsecase) CheckToken(ctx context.Context, token string) (*res.Customer, error) {
+	email, err := c.redisRepo.Get(ctx, token)
+	if err != nil {
+		return nil, arootErr.ErrAuthentication
+	}
+	customer := model.Customer{
+		Email: email,
+	}
+	if err := c.customerRepo.Save(ctx, &customer); err != nil {
+		return nil, err
+	}
+	return res.GetCustomer(&customer), nil
+}
+
+func (c *customerUsecase) TempRegister(ctx context.Context, body req.EmailBody) (*res.Message, error) {
+	token := uuid.NewString()
+	if err := c.redisRepo.Set(ctx, token, body.Email, time.Minute*60*24); err != nil {
+		return nil, err
+	}
+	if err := c.mailRepo.TempRegisterMail(body.Email, token); err != nil {
+		return nil, err
+	}
+	return &res.Message{Message: "ok"}, nil
 }

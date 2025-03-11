@@ -1,6 +1,7 @@
 package di
 
 import (
+	"IkezawaYuki/a-root-backend/config"
 	"IkezawaYuki/a-root-backend/infrastructure"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -33,4 +34,11 @@ func Close() {
 
 func NewDbDriver() infrastructure.DBDriver {
 	return infrastructure.NewDBDriver(db)
+}
+
+func NewMailDriver() infrastructure.MailDriver {
+	return infrastructure.NewSendgridDriver(
+		config.Env.SendgridApiKey,
+		config.Env.AppEnv,
+	)
 }

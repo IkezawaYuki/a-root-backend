@@ -6,6 +6,8 @@ import (
 )
 
 type Environment struct {
+	AppEnv                 string `envconfig:"APP_ENV" default:"develop"`
+	FrontendUrl            string `envconfig:"FRONTEND_URL""`
 	MetaClientID           string `envconfig:"META_CLIENT_ID"`
 	MetaClientSecret       string `envconfig:"META_CLIENT_SECRET"`
 	RedisAddr              string `envconfig:"REDIS_ADDR"`
@@ -23,6 +25,7 @@ type Environment struct {
 	StripeEndpointSecret   string `envconfig:"STRIPE_ENDPOINT_SECRET"`
 	OpenAiApiKey           string `envconfig:"OPENAI_API_KEY"`
 	SendgridApiKey         string `envconfig:"SENDGRID_API_KEY"`
+	FromEmail              string `envconfig:"FROM_EMAIL"`
 }
 
 var Env Environment

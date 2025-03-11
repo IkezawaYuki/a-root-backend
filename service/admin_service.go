@@ -12,8 +12,7 @@ import (
 )
 
 type adminService struct {
-	customerRepository repository.CustomerRepository
-	adminRepository    repository.AdminRepository
+	adminRepository repository.AdminRepository
 }
 
 type AdminService interface {
@@ -23,10 +22,9 @@ type AdminService interface {
 	IsUsedEmailAddress(ctx context.Context, email string) (bool, error)
 }
 
-func NewAdminService(customerRepo repository.CustomerRepository, adminRepo repository.AdminRepository) AdminService {
+func NewAdminService(adminRepo repository.AdminRepository) AdminService {
 	return &adminService{
-		customerRepository: customerRepo,
-		adminRepository:    adminRepo,
+		adminRepository: adminRepo,
 	}
 }
 
