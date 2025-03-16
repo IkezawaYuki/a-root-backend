@@ -1,5 +1,27 @@
 basePath: /v1
 definitions:
+  req.EmailBody:
+    properties:
+      email:
+        example: yuki@gmail.com
+        type: string
+    type: object
+  req.RegisterCustomer:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      wordpress_url:
+        type: string
+    type: object
+  req.Token:
+    properties:
+      token:
+        type: string
+    type: object
   req.User:
     properties:
       email:
@@ -308,6 +330,27 @@ paths:
       summary: '[Instagram=>WordPress]連携を実行する'
       tags:
       - customer
+  /customer/check_token:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: トークン
+        in: body
+        name: default
+        required: true
+        schema:
+          $ref: '#/definitions/req.Token'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/res.Customer'
+      summary: トークンの検証
+      tags:
+      - admin
   /customer/instagram:
     get:
       consumes:
@@ -380,6 +423,27 @@ paths:
       summary: 連携済みの投稿データを取得する
       tags:
       - customer
+  /customer/register/:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: メールアドレス
+        in: body
+        name: default
+        required: true
+        schema:
+          $ref: '#/definitions/req.RegisterCustomer'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/res.Message'
+      summary: ユーザーを登録する
+      tags:
+      - admin
   /customer/sync:
     post:
       consumes:
@@ -394,6 +458,27 @@ paths:
       summary: インスタグラム上の投稿データをWordpressに連携する
       tags:
       - customer
+  /customer/temp_register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: メールアドレス
+        in: body
+        name: default
+        required: true
+        schema:
+          $ref: '#/definitions/req.EmailBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/res.Message'
+      summary: ユーザーを登録する
+      tags:
+      - admin
 securityDefinitions:
   JWT:
     in: header

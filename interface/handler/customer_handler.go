@@ -181,6 +181,11 @@ func (h CustomerHandler) CheckToken(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
+	err = session.SetLoginSession(c, entity.ARootCustomer, h.redisClient, resp.ID)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
 	c.JSON(http.StatusCreated, resp)
 }
 

@@ -28,6 +28,7 @@ type CustomerUsecase interface {
 	Register(ctx context.Context, customerID int, body req.RegisterCustomer) (*res.Customer, error)
 	CheckToken(ctx context.Context, token string) (*res.Customer, error)
 	TempRegister(ctx context.Context, body req.EmailBody) (*res.Message, error)
+	UpdatePaymentStatus(ctx context.Context, sbpsCustomerID string, status entity.PaymentStatus) (*res.Message, error)
 }
 
 type customerUsecase struct {
@@ -355,4 +356,9 @@ func (c *customerUsecase) TempRegister(ctx context.Context, body req.EmailBody) 
 		return nil, err
 	}
 	return &res.Message{Message: "ok"}, nil
+}
+
+func (c *customerUsecase) UpdatePaymentStatus(ctx context.Context, sbpsCustomerID string, status entity.PaymentStatus) (*res.Message, error) {
+	panic("implement me")
+
 }

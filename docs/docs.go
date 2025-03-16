@@ -345,6 +345,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/customer/check_token": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "トークンの検証",
+                "parameters": [
+                    {
+                        "description": "トークン",
+                        "name": "default",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/req.Token"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/res.Customer"
+                        }
+                    }
+                }
+            }
+        },
         "/customer/instagram": {
             "get": {
                 "consumes": [
@@ -458,6 +491,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/customer/register/": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "ユーザーを登録する",
+                "parameters": [
+                    {
+                        "description": "メールアドレス",
+                        "name": "default",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/req.RegisterCustomer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/res.Message"
+                        }
+                    }
+                }
+            }
+        },
         "/customer/sync": {
             "post": {
                 "consumes": [
@@ -479,9 +545,76 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/customer/temp_register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "ユーザーを登録する",
+                "parameters": [
+                    {
+                        "description": "メールアドレス",
+                        "name": "default",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/req.EmailBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/res.Message"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "req.EmailBody": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "yuki@gmail.com"
+                }
+            }
+        },
+        "req.RegisterCustomer": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "wordpress_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "req.Token": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "req.User": {
             "type": "object",
             "properties": {
