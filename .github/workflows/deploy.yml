@@ -21,7 +21,7 @@ jobs:
       - name: Build, Tag, and Push Docker image
         env:
           ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          ECR_REPOSITORY: a-root-backend  # ご自身のECRリポジトリ名
+          ECR_REPOSITORY: a-root-backend  # ご自身のECRリポジトリ名　
           IMAGE_TAG: latest
         run: |
           # Dockerイメージのビルド
