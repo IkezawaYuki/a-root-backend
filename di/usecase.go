@@ -21,6 +21,8 @@ func NewCustomerUsecase() usecase.CustomerUsecase {
 		NewBaseRepository(),
 		NewPostRepository(),
 		NewCustomerRepository(),
+		NewRedisRepository(),
+		NewMailRepository(),
 		NewCustomerService(),
 		NewAuthService(),
 		NewPostService(),
