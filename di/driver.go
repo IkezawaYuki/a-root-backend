@@ -39,6 +39,5 @@ func NewDbDriver() infrastructure.DBDriver {
 func NewMailDriver() infrastructure.MailDriver {
 	return infrastructure.NewSendgridDriver(
 		config.Env.SendgridApiKey,
-		config.Env.AppEnv,
 	)
 }
