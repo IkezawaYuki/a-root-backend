@@ -6,8 +6,7 @@ import (
 )
 
 type Environment struct {
-	AppEnv                 string `envconfig:"APP_ENV" default:"develop"`
-	FrontendUrl            string `envconfig:"FRONTEND_URL""`
+	FrontendUrl            string `envconfig:"FRONTEND_URL"`
 	MetaClientID           string `envconfig:"META_CLIENT_ID"`
 	MetaClientSecret       string `envconfig:"META_CLIENT_SECRET"`
 	RedisAddr              string `envconfig:"REDIS_ADDR"`

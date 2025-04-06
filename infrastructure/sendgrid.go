@@ -13,18 +13,15 @@ type MailDriver interface {
 
 func NewSendgridDriver(
 	apiKey string,
-	environment string,
 ) MailDriver {
 	client := sendgrid.NewSendClient(apiKey)
 	return &sendgridDriver{
-		client:      client,
-		environment: environment,
+		client: client,
 	}
 }
 
 type sendgridDriver struct {
-	client      *sendgrid.Client
-	environment string
+	client *sendgrid.Client
 }
 
 func (d *sendgridDriver) Send(from, to, subject, body string) error {
@@ -33,8 +30,6 @@ func (d *sendgridDriver) Send(from, to, subject, body string) error {
 
 	message := mail.NewSingleEmail(fromInfo, subject, toInfo, body, "")
 
-	message.AddCategories(fmt.Sprintf("service:a-root-%s", d.environment))
-	message.SetCustomArg("env", d.environment)
 	message.SetCustomArg("service", "a-root")
 
 	_, err := d.client.Send(message)
@@ -55,7 +50,6 @@ func (d *sendgridDriver) SendBulk(from string, to []string, subject, body string
 		personalization := mail.NewPersonalization()
 		personalization.AddTos(toInfo)
 
-		personalization.SetCustomArg("env", d.environment)
 		personalization.SetCustomArg("service", "a-root")
 
 		personalizations[i] = personalization
@@ -66,7 +60,6 @@ func (d *sendgridDriver) SendBulk(from string, to []string, subject, body string
 	message.Personalizations = personalizations
 
 	// 環境識別用のカテゴリを追加
-	message.AddCategories(fmt.Sprintf("service:a-root-%s", d.environment))
 
 	// メールを送信
 	_, err := d.client.Send(message)
