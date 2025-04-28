@@ -55,7 +55,7 @@ func main() {
 		v1.POST("/admin/login", adminHandler.Login)
 		v1.POST("/temp_register", customerHandler.TempRegister)
 		v1.POST("/check_token", customerHandler.CheckToken)
-		
+
 		customer := v1.Group("/customer", middleware.Customer)
 		{
 			customer.GET("/me", customerHandler.GetMe)
